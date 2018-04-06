@@ -1,0 +1,265 @@
+<!-- 
+
+    creamos el documento package.json,mediante el comando:
+    
+            npm init
+    
+    y le instalamos las librerias de express y mongoose mediante el comando
+
+    npm install express o mongoose --save
+
+
+    nos creamos nuestro archivo app.js
+
+    nos creamos la variable express que tenga un require de express
+    la variable del objeto del servidor (app.js), nos hacemos la variable
+    app que sea igual a express y nos creamos un objeto mongoose que 
+    nos require mongoose.
+    en este primer paso que vamos a hacer vamos a utilizar mongoose
+    para conectarnos a la base de datos.
+
+        ***utilizamos APIS (interfaz de programacion de aplicaciones)***
+
+    vamos a utilizar mongoose para (tiene un metodo que se llama conect y 
+    ese metodo recibe, una uri"las url sonm un tipo de uri" esa uri lleva,
+    monbodb:// y ahi ponemos la ip, el puerto y la base de datos de donde está
+    mi mongodb), como lo tenemos en nuestro equipo ponemos, localhost.
+    ponemos el puerto de mongodb que es 27017, y ahora tengo que poner la
+    base de datos que quiero relacionar.
+
+         mongoose.connect('mongodb://localhost:27017/erp')
+
+    despues de esto necesitaremos un objeto de opciones.
+
+    ahora, tenemos que añadir .then() .cath(), la gestion de errores, cuando tenga
+    exito (then) le ponemos dentro una funcion flecha ()=>{}, y dentro añadimos un
+    console.log y en el catch vamos a meter otra funcion flecha y ahi si vamos a poner
+    una gestion del error, ponemos rr(nombre usual del parametro del error), y le 
+    decimos que nos pinte un console.error.
+            .then(()=>{
+                console.log('Conexión de la DB Ok');
+            })
+            .catch((err)=>{
+                console.error('Error de conexión', err)
+            })
+
+
+
+    me queda conectar el servidor mediante el metodo listen, y listen lo que recibia es el
+    puerto donde queremos arrancarlo, el hostname y una funcion para escribir algo en la
+    consola 
+
+            app.listen(3000, function(){
+                console.log('Servidor Ok ene l puerto 3000')
+            })
+
+    tras esto nos vamos a la consola y arrancamos el servidor mediante el comando
+    nodemon app, no nos arranca por que falta ir a una ventana de la consola de windows
+    y poner el comando:
+                mongod --dbpath data/db
+    
+    tras esto ponemos en la consola de visual nodemon app, de nuevo para volver a 
+    arrancarlo.
+    tenemos el servidor en el puerto 3000 de la localhost, y nuestro backend(formado por express y node)
+    ya está conectado gracias a al apis que hemos escribo, al servidor, localhost:27017
+    que es mongodb(servidor de base de datos).
+    los administramos con la terminal de visual studio y el servidor lo puedo administrar con la
+    consola mongo (shell mongo).
+                                                                                            ESTAMOS CONECTADOS AL SERVIDOR
+    
+    vamos a empezar a crearnos apra cada entidad que tenga nuestra app un modelo y un mongoose,
+    y un archivo de enrutamiento que hace posible tener todos los verbos html.
+
+    nos vamos a hacer un archivo modelo, nos creamos una carpeta para esos modelos, y lo habitual
+    es ponerle el nombre de model, al archivo modelo se le llama igual que la entidad de datos
+    que vamos a tratar, se escriben en singular y se va a llamar proveedor.js
+    y en proveedor.js escribimos el modelo para nuestro backend.
+
+    en este archivo tenemos que llamar a mongoose, dicha linea de codigo es:
+    var mongoose = require('mongoose');
+
+
+    nos vamos a crear un esquema, estos esquemas se suelen llamarlo por el nombre del elemento de datos
+    a tratar seguido de la palabra camelskey Schema y ahora utilizamos un constructor de 
+    objetos que va a ser new le decimos mongoose.Schema(), como es un constructor lo que recibe entre
+    los parentesis son las llaves y dentro de las llaves creamos un objeto donde vamos a definir
+    los campos que va a tener proveedor. además permite definir los campos para poder manipularlo,
+    pero ademas nos eprmite tiparlos (similar a JS), entonces le decimos que nuestro proveedor va a tener
+    nombre: y lo tipamos como string(nombres siempre string), email, cp,localidad,... y con todos los
+    objetos formariamos el esquema de proveedor.
+
+                varProveedorSchema = new mongoose.Schema({
+                                    nombre:String,
+                                    cif:String,
+                                    domicilio:String,
+                                    cp:Number,
+                                    localidad:String,
+                                    provincia:String,
+                                    telefono:String,
+                                    email:String,
+                                    contacto:String
+                        })
+    tenemos que exportar eso para poder utilizalo en otra aprte del backend, apra eso ponemos
+    module.exports y ahora le decimos que lo que vamos a exportar para poder utilizarlo, ponemos
+    mongoose.model y le decimos que exportamos dos cosas la primera el nombre del modelo, y luego
+    exportamos el esquema que hemos creado ProveedorSchema y con eso pongo a disposicion del resto
+    de servidor de backen lo que me he creado ahi.
+    nos vamos a crear archivos con las rutas que vamos a utilizar en http, pero antes de eso tenemos
+    que abrir unas librerias, body-parse y bluebert.
+    nos creamos el archivo apra las rutas, ese archivo se crea en una carpeta con el nombre routes, 
+    llamamos al archivo con el mismo nombre proveedor.js
+
+    en este archivo lo primero que nos vamos a traer es express, donde van a estar las rutas de los 
+    verbos get,post,put,delete. ademas vamos a utilizar mongoose, necesito importar el esquema,
+    por lo que nos creamos un objeto de nombre proveedor, en el require , tengo que poner la ruta relativa
+    del archivo que quiero que se importe ../models/proveedor  y ya lo tenemos para poder utilizarlo.
+    ahora nos creamos el objeto app que sea igual a express. vamos a inaugurar nuestra apis con un metodo
+    post, el metodo post app.post(),. el metodo recibe una ruta (ponemos la ruta raiz para las peticiones
+    que se hagan hacia la raiz "/"), y despues de la raiz ponemos la funcion flecha, los parametros que va a recibir
+    la funcion flecha son requiest respond.
+    
+    ahi lo primero que vamos a ahcer es crearnos una variable donde
+    vamos a almacenar el cuerpo del mensaje que nos llegue, y ahi tenemos que almacenar de la reposicion
+    el cuerpo del mensaje, y voy a aprovechar de la captura del cuerpo del mensaje para hacer una 
+    variable que se llame proveedor  y que este sea el esquema que hemos puesto en Proveedor, metodos
+    para crear objetos que he importado de mongoose, y entre llaves ponemos que nombre va a ser igual
+    a : body.nombre y así con el resto de propiedades 
+
+            var body = req.body;
+                nombre: body.nombre,
+                cif: body.cif,
+                domicilio: body.domicilio,
+
+    me creo un objeto con las distintas propiedades obteniendo los datos http que demando.
+    lo que voy a hacer ahora es guardar mi objeto en la base de datos, para eso utilizo un metodo
+    de mongoose que es muy parecido  a los metodos de admon de mongo,le vamos a decir que proveedor.save,
+    con eso le digo que grabe proveedor en la base de datos. necesito gestionar que ocurre si hay errores
+    y que ocurre con la respuesta que hay que darle a la app para decirle que ha ido todo bien, asi que
+    dentro de save, aplicamos una funcion flecha, y save nos manda como parametros en primer lugar el error,
+    y como segundo parametro lo que hemos guardado (datos). dentro de la funcion flecha tenemos que gestionar
+    que hago con esos dos parametros entonces, si tengo un error le ponemos un if, si existe error,
+    le decimos devuelvenos (return) una respuesta (res.) con un estatus 400 (codigo de estado) y un .json
+    en el jason añadimos llaves dentro de los parentesis, y le damos la propiedad ok:false, un mensaje, 
+    y por ultimo le devolvemos con la propiedad errores los errores mediante la propiedad mongoose err.
+    y si no da error ponemos que nos responda con el estado 201, y un json que tendrá un objeto que será,
+    ok:true, mensaje,... y nos falta exportar el archivo, y debajo le añadimos una nueva linea:
+    monudel.exports=app;
+    
+    nos vamos al archivo principal del backend, app.js y ahi empezamos a escribir,...
+    tenemos que importar 2 librerias apra que funcione bien. necesitamos las lobrerias body-parser 
+    y bluebird (promesas, mecanismos similares a los observales, metodos js que
+    esperan que apse algo y cuando detectan que hay algo se ejecuta) y podemos instalarlas 
+    a la vez separandolas por un espacion, el comando de la terminal es:
+
+                npm install body-parser bluebird --save
+
+    y vemos si se nos ha instalado en las dependencias de package.json
+
+    seguimos en app.js añadimos las body-parser que tenga un require body-parser jsuto despues de la declaracion
+    de mongoose le decimos que mongoose.promise va a ser igual (donde vamos a introducir la libreria
+    bluebird). y mongoose.connect('mongodb://localhost:27017/erp') seguido a erp ponemos entre llaves
+    (grupo de objetos) promiseLibrary: require('bluebird'). añadimos en mongoose antes del cierre,
+    aññadimos app.use(bodyParser.json({})); y app.use (bodyParser.urlencoded({extended:false}));
+    como ultimo paso, en el archivo de las rutas proveedor.js  tenemos importado app.js, pues
+    ahora tenemos que agregar la otra a app.js, por lo que por debajo de la variable bodyParser,
+    nos creamos una variable proveedor y le decimos require y como es un archivo propio utilizamos
+    la ruta ./routes/proveedor
+    y le decimos más abajo app.use(la ruta que vamos a utilizar para gestionar las peticiones de la app de 
+    los objetos de proveedor, /proveedor y , y el segundo aprametro que le pasamos es proveedor, y con
+    esa linea le digo, lo que entre por la ruta 3000 lo va a gestionar el archivo proveedor).
+
+    nos queda arrancar el servidor(nodemon app), cerciorarnos que el servidor de mongo está en funcionamiento y utilizar
+    una aplicacion para la ruta proveedor. 
+
+    arrancamos la teminal de visual estudio nodemon app, además debemos tener arrancado en una terminal
+    windows el servidor mongo, mediante el codigo: mongod --dbpath data/db, dejamos abierta
+    la ventana con el servidor mongo abierto. además en otra ventana de la consola de windows pongo
+    mongo, ponemos que nos enseñe las distintas bases de datos show dbs, dentro show collections,
+
+
+
+    vamos a crear ung et para recuperar de la base de datos lo que tenemos grabado, asiq ue nos vamos
+    a proveedor.js routes, y encima del metodo post ponemos  el metodo get, escribimos app.get
+    la ruta va a ser la misma (/), y ponemos una funcion flecha, la funcion va a recibir el request, el 
+    respond y un parametro que se llama next. el get es una peticion no recibe nada, no tenemos que hacer
+    ninguna gestion con el request, asi que directamente ponemos la referencia al modelo (proveedor), para que 
+    sobre eso podamos utilizar mongoose.find (igual que el de mongo) y a ese find le metemos dentro
+    un documento vacio diciendole así que me busque todos los proveedores de proveedors de la 
+    base de datos, la parte de busqueda está lista, lo que tenemos que gestionar es lo que ha buscado mongoose 
+    y que tiene que devolver. añadimos un metodo que se llama exec, y dentro del mismo una funcion flecha,
+    el exec va a recibir error, y los datos de la busqueda. y dentro gestiono primero el error y luego 
+    la respuesta. el error lo copiamos de más abajo y en res.status dentro del json
+    podemos poner los datos directamente, o podemos hacer un objeto de un mensaje, nos vamos al json y le
+    decimos ok:true, proveedores,... en proveedores ponemos datos para que coja los datos de los datos de prove.
+
+
+    podemos poner alguna limitacion en el modelo, podemos limitar campos para que no se pueda repetir,
+    le vamos a decir que el cif sea un campo unico, no se pueda repetir.
+    nos tenemos que importar una libreria de validaciones de mongoose, y otra cosa que tenemos que hacer,
+    es campos con cifs repetidos, nos cargamos la coleccion para que no nos de guerra.
+    para borrar la coleccion en la base de datos mongo (terminal) ponemos db, show collections,
+    db.proveedors.drop() y así lo borramos.
+    paramos este servidor y nos instalamos en proveedor.route instalamos en la consola con el codigo:
+    
+                npm install mongoose-unique-validator --save
+    
+    una libreria que es el numero de validez de mongoose, para comprobar que se ha instalado correctamente
+    nos vamos al package y miramos las dependencias.  ahora vamos a utilizar esta libreria en el modelo
+    proveedor.js, la añadimos por debajo de la variable mongoose, ahroa como ya tengo eso puedo limitar el 
+    camo que yo quiera para que sea unico y no puedan existir dos campos con el mismo valor, borro string
+    del dif que es el que quiero cambiar y cambio el valor por un objeto y a ese objeto le voy a decir que sea de tipo
+    string, y ahora le pongo unique:true, y con eso le digo a mongoose cuando llegues al campo cif, tienes
+    que comprobar con la base de datos tienes que comprobar que lo que viene es de tipo string,
+    y además comprobar que no exista un documento que en el campo dif tenga el mismo valor que otro.
+    y ahora podemos administrar el error. para eso ponemos justo debajo del modelo,
+    proveedorSchema.plugin(unique, { message:'el proveedor cone se DIF ya existe'} )
+    dentro de otro documento de opciones puedo ponerle un mensajito para que me lo mande a la aplicacion.
+
+    vamos a utiolizar el petodo put, qwue es un metodo para actualizar,v erbo del protocolo http,
+    necesitamos apra actualizar un registro de la base de datos, necesitamos saber que documento 
+    queremos actualizar, con lo cual enemos que apsarle de alguna manera desde la app, un identificador
+    para ese documento concreto, en mongo está clar, necesditamos el identificador unico para identificar
+    el elemento que quieres actualizar. en angular se puede pasar esa id en la url.
+    la forma de escribirlo es : y el parametro que queremos pasar, en este caso el id, va a tener una
+    funcion que tendra los aprametros req,res y next, dentro vamos a ejecutar, necesitamos la estancia 
+    donde están proveedor y a esta estancia le vamos a aplicar un metodo de mongoose que nos permite conectar
+    con la base de datos, ese metodo se llama findByIdAndUpdate, busca por un id y actualiza.
+    como busca por id, ponemos el ide, como obtengo la id, viene en una propiedad de la peticion que 
+    se llama params y dentro del params escojo la propiedad id. necesitamos mandar en el mensaje los
+    datos que queremos actualizar. ponemos directamente req.body, eso tenemos que amdnarlo en el mismo
+    formato en el que están almacenado esos datos.
+    "recibe el parametro id para localizar el documento que queremos modificar, recibimos el cuerpo"
+
+    añadimos otro parametro que va a ser una funcion y le pasamos como parametro el error y 
+    un objeto de datos (que es opcional, normal mente se pone). ponemos el if del error como en los
+    metodos post. y le modificamos el mensaje poniendo error al actualizar el proveedor, le decimos
+    que pasa en caso de exito, le ponemos un res.status(200).json y le mandamos un mensaje ok:true
+    y el mensaje con su estructura.
+    levantamos el servidor de la base de datos nodemon app, y abrimos el servidor mongo,
+    en cmd de windows, mongod --dbpath data/db
+    arrancamos postman
+    necesitamos coger la id del proveedor, y nos creamos en postman un elemento nuevo
+    que sea put, ponemos localhot:3000/
+    necesito mandarle lo que voy a actualizar, voy a body y ponemos,
+    nombre y el id.
+
+    nos falta el metodo delete, se suele copiar el metodo put porque es muy parecido, y lo pegamos
+    justo debajo, será en vez de put, delete, va a recibir lo mismo pero el metodo find,... lo
+    cambiamos a findByIdAndRemove y ahora le quitamos req.body, en el mensaje cambiamos actualizar
+    por borrar y el mensaje ok en vez de actualizado, eliminado.
+
+    el siguiente paso es empezar a crearnos nuestro proyecto.
+
+
+    ****cuando hagamos repositorios ignora lo que necesite: .gitignore****
+
+    y dentro ponemos tras ponergitignore y ponemos los repositorios que no quiero que se guarden.
+    
+    tras esto ponemos en la consola, git init, 
+
+
+
+
+
+
+ -->
